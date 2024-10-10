@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RocklandOrderAPI.Data;
 
@@ -11,9 +12,11 @@ using RocklandOrderAPI.Data;
 namespace RocklandOrderAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241009235327_UpdateOrderDetail")]
+    partial class UpdateOrderDetail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -278,6 +281,9 @@ namespace RocklandOrderAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
@@ -287,7 +293,7 @@ namespace RocklandOrderAPI.Migrations
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("UserOrderId")
+                    b.Property<int?>("UserOrderId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -468,9 +474,7 @@ namespace RocklandOrderAPI.Migrations
 
                     b.HasOne("RocklandOrderAPI.Data.UserOrder", null)
                         .WithMany("Details")
-                        .HasForeignKey("UserOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserOrderId");
 
                     b.Navigation("Product");
                 });

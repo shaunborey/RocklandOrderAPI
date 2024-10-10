@@ -6,7 +6,7 @@ namespace RocklandOrderAPI.Data
     {
         public int Id { get; set; }        
         public ApplicationUser User { get; set; }
-        public ICollection<OrderDetail> Details { get; set; } = new List<OrderDetail>();
+        public IEnumerable<OrderDetail> Details { get; set; } = new List<OrderDetail>();
         public byte[] PurchaseOrderPDF { get; set; } = new byte[0];
         public decimal OrderTotal { get; set; }
         public required string ShippingAddress1 { get; set; }

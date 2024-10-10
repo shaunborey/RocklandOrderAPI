@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using RocklandOrderAPI.Data;
 using RocklandOrderAPI.Models;
 using System.Security.Claims;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace RocklandOrderAPI.Controllers
 {
@@ -45,6 +47,23 @@ namespace RocklandOrderAPI.Controllers
             }
         }
 
+        [HttpGet("product-list")]
+        public async Task<IActionResult> GetProductList()
+        {
+            try
+            {
+                var productList = await _dbContext.Products.ToListAsync();
+                List<ProductModel> products = new List<ProductModel>();
+                productList.ForEach(item => products.Add(new ProductModel() { Id = item.Id, Name = item.Name, Description = item.Description, Price = item.Price, Image = Convert.ToBase64String(item.Image) }));
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred while retrieving the product list.");
+                return StatusCode(500, "Error: An error occurred while retrieving the product list.");
+            }
+        }
+
         [HttpPost("create-order")]
         [Authorize]
         public async Task<IActionResult> CreateOrder(OrderModel model)
@@ -62,10 +81,12 @@ namespace RocklandOrderAPI.Controllers
                     return BadRequest("Shipping address is required.");
                 }
 
-                if (model.PurchaseOrderPDF == null || !(_validatePDF(model.PurchaseOrderPDF)))
+                byte[] pdfFile = Convert.FromBase64String(model.PurchaseOrderPDF);
+
+                if (model.PurchaseOrderPDF == null || !(_validatePDF(pdfFile)))
                 {
                     return BadRequest("Invalid purchase order file.");
-                }
+                }                
 
                 var shippingOption = await _dbContext.ShippingOptions.FindAsync(model.ShippingOptionId);
                 if (shippingOption == null)
@@ -91,11 +112,14 @@ namespace RocklandOrderAPI.Controllers
                     return Unauthorized();
                 }
 
+                List<OrderDetail> detailList = new List<OrderDetail>();
+                model.Details.ForEach(d => detailList.Add(new OrderDetail() { Id = d.Id, UserOrderId = d.UserOrderId, Product = _dbContext.Products.First(p => p.Id == d.Product.Id), Quantity = d.Quantity, TotalPrice = d.TotalPrice }));
+
                 var userOrder = new UserOrder
                 {
                     User = user,
-                    Details = model.Details,
-                    PurchaseOrderPDF = model.PurchaseOrderPDF,
+                    Details = detailList,
+                    PurchaseOrderPDF = pdfFile,
                     OrderTotal = model.OrderTotal,
                     ShippingAddress1 = model.ShippingAddress1,
                     ShippingAddress2 = model.ShippingAddress2,
@@ -110,7 +134,7 @@ namespace RocklandOrderAPI.Controllers
                 _dbContext.UserOrders.Add(userOrder);
                 await _dbContext.SaveChangesAsync();
 
-                return Ok();
+                return Ok("The order was successfully submitted.");
             }
             catch (Exception ex)
             {

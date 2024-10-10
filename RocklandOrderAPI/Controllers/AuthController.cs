@@ -177,7 +177,7 @@ namespace RocklandOrderAPI.Controllers
             try
             {
                 using var smtpClient = new SmtpClient();
-                smtpClient.Host = _config["Email:SmtpHost"];
+                smtpClient.Host = _config.GetValue("Email:SmtpHost", "");
                 smtpClient.Port = 587;
                 smtpClient.EnableSsl = true;
                 smtpClient.Credentials = new NetworkCredential(_config["Email:SmtpUsername"], _config["Email:SmtpPassword"]);

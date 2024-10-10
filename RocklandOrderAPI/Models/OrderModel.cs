@@ -4,8 +4,8 @@ namespace RocklandOrderAPI.Models
 {
     public class OrderModel
     {
-        public ICollection<OrderDetail> Details { get; set; } = new List<OrderDetail>();
-        public byte[] PurchaseOrderPDF { get; set; } = new byte[0];
+        public List<OrderDetail> Details { get; set; } = new List<OrderDetail>();
+        public string PurchaseOrderPDF { get; set; }
         public decimal OrderTotal { get; set; }
         public string ShippingAddress1 { get; set; }
         public string ShippingAddress2 { get; set; }
